@@ -1,0 +1,155 @@
+//Libraries
+#include <FastLED.h>  //https://github.com/FastLED/FastLED
+
+//Constants
+#define NUM_STRIPS 3
+#define NUM_LEDS 4
+#define BRIGHTNESS 100
+#define LED_TYPE WS2812B
+#define COLOR_ORDER BRG  //RGB
+#define FASTLED_ALLOW_INTERRUPTS 0
+#define FASTLED_INTERRUPT_RETRY_COUNT 1
+#define FRAMES_PER_SECOND 60
+#define COOLING 55
+#define SPARKING 120
+
+//led blanche
+#define led_blanche 11
+
+//Parameters
+const int stripPinR = 5;
+const int stripPinB = 6;
+const int stripPinV = 9;
+//
+const int BoutonScenario = 2;   // Broche à laquelle est connecté le bouton poussoir
+int etatPrecedent = HIGH;  // État précédent du bouton
+int numScenario = 0;
+
+//Variables
+bool gReverseDirection = false;
+
+//Objects
+CRGB ledsR[NUM_LEDS];
+CRGB ledsB[NUM_LEDS];
+CRGB ledsV[NUM_LEDS];
+
+void setup() {
+  //Init Serial USB
+  Serial.begin(9600);
+  pinMode(BoutonScenario, INPUT);
+  pinMode(led_blanche, OUTPUT);
+  //Init led strips
+  FastLED.addLeds<LED_TYPE, stripPinR, COLOR_ORDER>(ledsR, NUM_LEDS);
+  FastLED.addLeds<LED_TYPE, stripPinB, COLOR_ORDER>(ledsB, NUM_LEDS);
+  FastLED.addLeds<LED_TYPE, stripPinV, COLOR_ORDER>(ledsV, NUM_LEDS);
+
+  FastLED.setBrightness(BRIGHTNESS);
+}
+
+void loop() {
+  //
+  int lectureBouton = digitalRead(BoutonScenario);  // Lecture de l'état du bouton
+
+  // Vérifier si le bouton est enfoncé
+  if (lectureBouton == LOW && etatPrecedent == HIGH) {
+    Serial.println("Le bouton a été enfoncé !");
+    numScenario = (numScenario + 1) % 4;
+    Serial.println(numScenario);
+    delay(100);
+}
+   
+  etatPrecedent = lectureBouton;   
+
+  switch (numScenario) {
+    case 0:
+      ledScenarioOff();
+       Serial.println(numScenario);
+      break;
+    case 1:
+      ledScenario3();
+       Serial.println(numScenario);
+      break;
+    case 2:
+      ledScenario1();
+       Serial.println(numScenario);
+      break;
+   case 3:
+      ledScenario2();
+       Serial.println(numScenario);
+      break;
+  
+  
+  }
+  
+}
+void ledScenarioOff(void) {
+  for (int i = 0; i < NUM_LEDS; i++) {
+
+    ledsR[i] = CRGB::Black;
+    ledsB[i] = CRGB::Black;
+    ledsV[i] = CRGB::Black;
+    FastLED.show();
+    delay(75);
+  }
+}
+void ledScenario1(void) {  //Scénario 1
+
+  for (int i = 0; i < NUM_LEDS; i++) {
+
+    ledsR[i].setRGB(255, 22, 20);
+    ledsB[i].setRGB(110, 199, 241);
+    ledsV[i].setRGB(150, 20, 245);
+    FastLED.show();
+
+    delay(50);
+
+    if (i == NUM_LEDS - 1) {
+      //fait varier la led en intensité
+      for (int i = 10; i < 255; i++) {
+        analogWrite(led_blanche, i);
+        delay(10);
+        analogWrite(led_blanche, 0);
+      }
+    }
+  }
+  // Éteindre toutes les LEDs
+  ledScenarioOff();
+  
+}
+void ledScenario2(void) {  //Scénario 2
+
+  for (int i = 0; i < NUM_LEDS; i++) {
+
+    ledsR[i].setRGB(255, 22, 20);
+    ledsB[i].setRGB(110, 199, 241);
+    ledsV[i].setRGB(150, 20, 245);
+    FastLED.show();
+
+    delay(10);
+    // Clignoter la LED blanche
+    for (int i = 10; i < 255; i++) {
+      analogWrite(led_blanche, i);
+      delay(10);
+    }
+    for (int i = 255; i >= 10; i--) {
+      analogWrite(led_blanche, i);
+      delay(10);
+    }
+   
+  }
+  // Éteindre toutes les LEDs
+  ledScenarioOff();
+  
+}
+void ledScenario3(void) {  //Scénario 3
+
+  for (int i = 0; i < NUM_LEDS; i++) {
+
+    ledsR[i].setRGB(255, 22, 20);
+    ledsB[i].setRGB(110, 199, 241);
+    ledsV[i].setRGB(150, 20, 245);
+    FastLED.show();
+
+    analogWrite(led_blanche, 255);
+  }   
+}
